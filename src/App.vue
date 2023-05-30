@@ -9,7 +9,8 @@ const lorem =
 const words = lorem.split(' ');
 
 const perPage = 15;
-const last = Math.ceil(words.length / perPage);
+const count = words.length;
+const lastPage = Math.ceil(count / perPage);
 
 const tavoloRef = ref<any>();
 
@@ -30,7 +31,8 @@ const resolver: Resolver<{ id: string }> = async ({ page }) => {
       .splice(start, perPage),
     paginator: {
       page,
-      last,
+      lastPage,
+      count,
       perPage,
     },
   };

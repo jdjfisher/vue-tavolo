@@ -1,7 +1,8 @@
 export interface Paginator {
   page: number;
   perPage: number;
-  last: number;
+  lastPage: number;
+  count: number;
 }
 
 export interface PaginatedData<T> {
