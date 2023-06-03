@@ -15,8 +15,13 @@ interface ResolverParams {
   abortSignal: AbortSignal;
 }
 
+export type KeyableField<T extends Record<string, any>> = {
+  [K in keyof T]: T[K] extends string | number | symbol ? K : never;
+}[keyof T];
+
 export type Resolver<T> = (params: ResolverParams) => Promise<PaginatedData<T>>;
 
 export interface Classes {
   row: string;
+  rowSelected: string;
 }

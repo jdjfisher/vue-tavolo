@@ -1,10 +1,13 @@
-<script setup lang="ts" generic="T">
+<script setup lang="ts" generic="T extends Record<string, any>">
 import type { Resolver, PaginatedData, Classes } from '@/types';
 import Paginator from '@/components/Paginator.vue';
-import { computed, onMounted, ref, watch } from 'vue';
+import Row from '@/components/Row.vue';
+import { computed, onMounted, ref, toValue, watch } from 'vue';
+import { useSelectable } from '@/composables/selectable';
+import type { KeyableField } from '@/types';
 
 const props = defineProps<{
-  keyBy: keyof T;
+  keyBy: KeyableField<T>;
   resolver: Resolver<T>;
   classes?: Classes;
 }>();
@@ -41,13 +44,25 @@ function clear() {
 
 const rows = computed(() => data.value?.rows);
 
+const keyBy = computed(() => props.keyBy);
+
+const { selected, isSelected, onRowClick, clearSelected } = useSelectable<T>(props.keyBy, rows);
+
 watch(page, index);
 
 onMounted(index);
 
+const emit = defineEmits<{
+  selected: [T[]];
+}>();
+
+watch(selected, () => emit('selected', toValue(selected)));
+
 defineExpose({
   index,
   clear,
+  selected,
+  clearSelected,
 });
 </script>
 
@@ -67,11 +82,20 @@ defineExpose({
       </div>
 
       <div v-else>
-        <div v-for="row in rows" :key="row[keyBy]" :class="classes?.row">
-          <slot name="row" v-bind="{ row, loading }">
-            {{ row }}
-          </slot>
-        </div>
+        <Row
+          v-for="row in rows"
+          :key="row[keyBy]"
+          :classes="classes"
+          :row="row"
+          :selected="isSelected(row)"
+          @click="() => onRowClick(row)"
+        >
+          <template #default="params">
+            <slot name="row" v-bind="{ loading, ...params }">
+              {{ row }}
+            </slot>
+          </template>
+        </Row>
       </div>
     </Transition>
 
